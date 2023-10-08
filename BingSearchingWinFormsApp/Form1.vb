@@ -187,7 +187,10 @@ Public Class Form1
                     Dim responseBody As String = Await response.Content.ReadAsStringAsync()
                     Debug.WriteLine("############ responseBody: ############### ")
                     'Debug.WriteLine(responseBody)
-                    Return responseBody
+                    Dim pattern As String = "<strong>(.*?)</strong>"
+                    Dim cleanText As String = Regex.Replace(responseBody, pattern, "$1")
+                    'Debug.WriteLine(responseBody)
+                    Return cleanText
                 Else
                     Debug.WriteLine("http status code : " & response.StatusCode)
                     'MsgBox("Http Status Code : " & response.StatusCode)
@@ -210,9 +213,8 @@ Public Class Form1
 
 
     Public Shared Function FindEmails(input As String) As List(Of String)
-        'Dim emailPattern As String = "\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}(?:\b|\s|\.|[,;!])"
-
-        Dim emailPattern As String = "\b[A-Za-z0-9._%+-]+@(<strong>|)[A-Za-z0-9.-]+\.[A-Za-z]{2,}(<\/strong>|)\b"
+        Dim emailPattern As String = "\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}(?:\b|\s|\.|[,;!])"
+        'Dim emailPattern As String = "\b[A-Za-z0-9._%+-]+@(<strong>|)[A-Za-z0-9.-]+\.[A-Za-z]{2,}(<\/strong>|)\b"
 
 
         Dim regex As New Regex(emailPattern)
