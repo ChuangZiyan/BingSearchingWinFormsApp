@@ -6,6 +6,7 @@ Imports Newtonsoft.Json.Linq
 Imports System.Threading
 Imports System.Collections
 Imports System.Text.RegularExpressions
+Imports Microsoft.Web.WebView2.Core
 Imports System.Text
 
 Public Class Form1
@@ -15,6 +16,10 @@ Public Class Form1
     Public keywordFilePath As String = "keyword.txt"
 
     Public PAUSE_FLAG = False
+    Public NAVIGATION_COMPLETED = False
+
+
+
 
     Private Sub Open_Note_Btn_Click(sender As Object, e As EventArgs) Handles Open_Note_Btn.Click
 
@@ -91,6 +96,7 @@ Public Class Form1
             Dim curr_searching_page = 0
             Dim page_sum = Max_Searching_Page_Limit_NumericUpDown.Value
 
+
             'Debug.WriteLine(kword)
             For start = 1 To Max_Searching_Page_Limit_NumericUpDown.Value * 10 - 1 Step 10
                 curr_searching_page += 1
@@ -119,17 +125,18 @@ Public Class Form1
 
                     If CheckEmailExistInRichTextBox(email) = False Then
                         Message_RichTextBox.AppendText(email & vbCrLf)
+                        ' Save email to file 
+                        Using writer As New StreamWriter(result_filePath, True)
+                            writer.WriteLine(email)
+                            writer.Close()
+                        End Using
                     End If
 
-                    If CheckEmailExistInFile(result_filePath, email) Then
-                        Continue For
-                    End If
+                    'If CheckEmailExistInFile(result_filePath, email) Then
+                    '   Continue For
+                    'End If
 
-                    ' Save email to file 
-                    Using writer As New StreamWriter(result_filePath, True)
-                        writer.WriteLine(email)
-                        writer.Close()
-                    End Using
+
                 Next
 
                 Await Delay_msec(Delay_Sec_Between_Searching_NumericUpDown.Value * 1000)
@@ -176,30 +183,28 @@ Public Class Form1
         'Return "hello this is test email.test@hello.com feel free to contact us"
 
         Try
-            Using httpClient As New HttpClient()
-
-                'httpClient.DefaultRequestHeaders.Authorization = New AuthenticationHeaderValue("Bearer", bearerToken)
-                'Dim content As New StringContent(jsonRequestData, Encoding.UTF8, "application/json")
-
-                Dim response As HttpResponseMessage = Await httpClient.GetAsync(apiUrl)
-
-                If response.IsSuccessStatusCode Then
-                    Dim responseBody As String = Await response.Content.ReadAsStringAsync()
-                    Debug.WriteLine("############ responseBody: ############### ")
-                    'Debug.WriteLine(responseBody)
-                    Dim pattern As String = "<strong>(.*?)</strong>"
-                    Dim cleanText As String = Regex.Replace(responseBody, pattern, "$1")
-                    'Debug.WriteLine(responseBody)
-                    Return cleanText
+            MainWebView2.CoreWebView2.Navigate(apiUrl)
+            ' wait 15 secs until page ready
+            NAVIGATION_COMPLETED = False
+            For wait_sec = 0 To 15
+                If NAVIGATION_COMPLETED Then
+                    Exit For
                 Else
-                    Debug.WriteLine("http status code : " & response.StatusCode)
-                    'MsgBox("Http Status Code : " & response.StatusCode)
-                    Return "429"
+                    Await Delay_msec(1000)
                 End If
 
-            End Using
+            Next
 
-            Return "error"
+            Dim script As String = Await MainWebView2.ExecuteScriptAsync("document.querySelector('main').outerHTML.toString();")
+
+            script = script.Replace("\""", "").Replace("\u003C", "<")
+
+            Debug.WriteLine(script)
+            Dim pattern As String = "<strong>(.*?)</strong>"
+            Dim cleanText As String = Regex.Replace(script, pattern, "$1")
+
+            Return cleanText
+
         Catch ex As Exception
             Return "exception"
             'EventLog_ListBox.Items.Add("查詢發生錯誤")
@@ -285,7 +290,24 @@ Public Class Form1
 
         Line_Number_Counter_Label.Text = "共" & line_counter & "行"
 
+        AddHandler MainWebView2.NavigationCompleted, AddressOf WebView2_NavigationCompletedAsync
     End Sub
+
+
+    Private Async Function WebView2_NavigationCompletedAsync(sender As Object, e As CoreWebView2NavigationCompletedEventArgs) As Task(Of Boolean)
+
+        Await Delay_msec(1000)
+        If e.IsSuccess Then
+            NAVIGATION_COMPLETED = True
+            Debug.WriteLine("PAGE READY : " & NAVIGATION_COMPLETED)
+        Else
+            Debug_Msg_ListBox.Items.Add("頁面載入失敗")
+            NAVIGATION_COMPLETED = False
+        End If
+
+
+        Return False
+    End Function
 
     Public Shared Async Function Delay_msec(msec As Integer) As Task
         Await Task.Delay(msec)
