@@ -72,7 +72,7 @@ Public Class Form1
         End_Time_TextBox.Text = ""
 
         Dim result_filePath As String = searchingResultDir + "\SearchingResult_" + DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss") + ".txt"
-        File.Create(result_filePath).Dispose()
+        'File.Create(result_filePath).Dispose()
 
         Dim keyword_list As New List(Of String)
 
@@ -126,6 +126,7 @@ Public Class Form1
                     If CheckEmailExistInRichTextBox(email) = False Then
                         Message_RichTextBox.AppendText(email & vbCrLf)
                         ' Save email to file 
+                        result_filePath = searchingResultDir + "\SearchingResult_" + DateTime.Now.ToString("yyyy-MM-dd") + ".txt"
                         Using writer As New StreamWriter(result_filePath, True)
                             writer.WriteLine(email)
                             writer.Close()
@@ -135,8 +136,6 @@ Public Class Form1
                     'If CheckEmailExistInFile(result_filePath, email) Then
                     '   Continue For
                     'End If
-
-
                 Next
 
                 Await Delay_msec(Delay_Sec_Between_Searching_NumericUpDown.Value * 1000)
