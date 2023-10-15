@@ -101,6 +101,7 @@ Partial Class Form1
         ' Line_Number_NumericUpDown
         ' 
         Line_Number_NumericUpDown.Location = New Point(128, 65)
+        Line_Number_NumericUpDown.Maximum = New Decimal(New Integer() {999999999, 0, 0, 0})
         Line_Number_NumericUpDown.Name = "Line_Number_NumericUpDown"
         Line_Number_NumericUpDown.Size = New Size(69, 27)
         Line_Number_NumericUpDown.TabIndex = 3
