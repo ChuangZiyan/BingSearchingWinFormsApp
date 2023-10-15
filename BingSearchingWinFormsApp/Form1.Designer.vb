@@ -223,7 +223,7 @@ Partial Class Form1
         ' Max_Searching_Page_Limit_NumericUpDown
         ' 
         Max_Searching_Page_Limit_NumericUpDown.Location = New Point(290, 197)
-        Max_Searching_Page_Limit_NumericUpDown.Maximum = New Decimal(New Integer() {1000, 0, 0, 0})
+        Max_Searching_Page_Limit_NumericUpDown.Maximum = New Decimal(New Integer() {999999999, 0, 0, 0})
         Max_Searching_Page_Limit_NumericUpDown.Name = "Max_Searching_Page_Limit_NumericUpDown"
         Max_Searching_Page_Limit_NumericUpDown.Size = New Size(56, 27)
         Max_Searching_Page_Limit_NumericUpDown.TabIndex = 18
